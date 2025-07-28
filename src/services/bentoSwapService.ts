@@ -12,7 +12,12 @@ import {
   SelectMode,
   ERC20_ABI,
 } from "../config/symbiosis";
-import { getBrazilianToken, isBrazilianToken } from "../config/tokenConstants";
+import {
+  getBrazilianToken,
+  isBrazilianToken,
+  getNativeToken,
+  isNativeToken,
+} from "../config/tokenConstants";
 
 /**
  * Service class to manage Bento Swap operations using Symbiosis SDK
@@ -82,7 +87,7 @@ export class BentoSwapService {
 
   /**
    * Helper to look up a token by address or symbol on a specific chain
-   * Now includes support for Brazilian tokens
+   * Now includes support for Brazilian tokens and native tokens
    */
   getToken(chainId: ChainId, id: string): Token | undefined {
     // Verificar se id é válido
@@ -94,9 +99,26 @@ export class BentoSwapService {
       return undefined;
     }
 
-    // Try exact address match first
-    const byAddress = this.symbiosis.findToken(id, chainId);
-    if (byAddress) return byAddress;
+    // Check if it's a native token by symbol
+    if (isNativeToken(id, chainId)) {
+      const nativeToken = getNativeToken(chainId);
+      if (nativeToken) {
+        return new Token({
+          chainId: nativeToken.chainId as ChainId,
+          address: nativeToken.address, // Empty string for native tokens
+          decimals: nativeToken.decimals,
+          symbol: nativeToken.symbol,
+          name: nativeToken.name,
+          isNative: true,
+        });
+      }
+    }
+
+    // Try exact address match first (skip for native tokens with empty address)
+    if (id !== "") {
+      const byAddress = this.symbiosis.findToken(id, chainId);
+      if (byAddress) return byAddress;
+    }
 
     // Check if it's a Brazilian token
     if (isBrazilianToken(id)) {
@@ -126,6 +148,14 @@ export class BentoSwapService {
       );
       return undefined;
     }
+  }
+
+  /**
+   * Get native token symbol for a specific chain
+   */
+  getNativeTokenSymbol(chainId: number): string {
+    const nativeToken = getNativeToken(chainId);
+    return nativeToken?.symbol || "ETH"; // Default to ETH
   }
 
   /**
@@ -631,6 +661,10 @@ export class BentoSwapService {
       tokenAmountOutMin: result.tokenAmountOutMin.toSignificant(),
       priceImpact: result.priceImpact.toSignificant(),
       approveTo: result.approveTo,
+      // Incluir estimatedTime se disponível no resultado do SDK
+      ...((result as any).estimatedTime !== undefined && {
+        estimatedTime: (result as any).estimatedTime,
+      }),
       routes: result.routes.map((r) => ({
         provider: r.provider,
         tokens: r.tokens.map((t) => ({

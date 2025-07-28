@@ -10,14 +10,76 @@ export interface TokenInfo {
   chainId: number;
   name: string;
   icon: string;
+  isNative?: boolean;
 }
+
+// Configuração para tokens nativos por rede
+export const NATIVE_TOKENS: Record<number, TokenInfo> = {
+  // Ethereum Mainnet
+  1: {
+    address: "",
+    symbol: "ETH",
+    decimals: 18,
+    chainId: 1,
+    name: "Ethereum",
+    icon: "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
+    isNative: true,
+  },
+  // Base
+  8453: {
+    address: "",
+    symbol: "ETH",
+    decimals: 18,
+    chainId: 8453,
+    name: "Ethereum",
+    icon: "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
+    isNative: true,
+  },
+  // Polygon
+  137: {
+    address: "",
+    symbol: "MATIC",
+    decimals: 18,
+    chainId: 137,
+    name: "Polygon",
+    icon: "https://tokens.1inch.io/0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0.png",
+    isNative: true,
+  },
+  // Arbitrum
+  42161: {
+    address: "",
+    symbol: "ETH",
+    decimals: 18,
+    chainId: 42161,
+    name: "Ethereum",
+    icon: "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
+    isNative: true,
+  },
+  // Optimism
+  10: {
+    address: "",
+    symbol: "ETH",
+    decimals: 18,
+    chainId: 10,
+    name: "Ethereum",
+    icon: "https://tokens.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png",
+    isNative: true,
+  },
+  // Avalanche
+  43114: {
+    address: "",
+    symbol: "AVAX",
+    decimals: 18,
+    chainId: 43114,
+    name: "Avalanche",
+    icon: "https://tokens.1inch.io/0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7.png",
+    isNative: true,
+  },
+};
 
 // URLs dos ícones dos tokens brasileiros
 export const TOKEN_ICONS = {
   BRZ: "https://assets.coingecko.com/coins/images/8472/standard/MicrosoftTeams-image_%286%29.png?1696508657",
-  // Adicionar outros ícones conforme necessário
-  // BRLA: "https://assets.coingecko.com/coins/images/xxxx/standard/brla.png",
-  // PIX: "https://assets.coingecko.com/coins/images/yyyy/standard/pix.png"
 } as const;
 
 // Nomes completos dos tokens brasileiros
@@ -75,11 +137,6 @@ export const BRAZILIAN_TOKENS: Record<string, Record<number, TokenInfo>> = {
       icon: TOKEN_ICONS.BRZ,
     },
   },
-
-  // Adicionar outros tokens brasileiros no futuro:
-  // BRLA: { ... } - BRL Anchor Token
-  // PIX: { ... } - PIX Token (se/quando disponível)
-  // USDBRL: { ... } - USD-BRL synthetic tokens
 };
 
 /**
@@ -90,6 +147,21 @@ export function getBrazilianToken(
   chainId: number
 ): TokenInfo | undefined {
   return BRAZILIAN_TOKENS[symbol.toUpperCase()]?.[chainId];
+}
+
+/**
+ * Obter informações de um token nativo por chainId
+ */
+export function getNativeToken(chainId: number): TokenInfo | undefined {
+  return NATIVE_TOKENS[chainId];
+}
+
+/**
+ * Verificar se um token é nativo baseado no símbolo e chainId
+ */
+export function isNativeToken(symbol: string, chainId: number): boolean {
+  const nativeToken = getNativeToken(chainId);
+  return nativeToken?.symbol.toLowerCase() === symbol.toLowerCase();
 }
 
 /**

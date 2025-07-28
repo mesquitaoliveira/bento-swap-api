@@ -1,6 +1,8 @@
 import express from "express";
 import { Request, Response } from "express";
+import { Token } from "symbiosis-js-sdk";
 import { BentoSwapService } from "../services/bentoSwapService";
+import { getTokenExample } from "../config/tokenConstants";
 
 const router = express.Router();
 const bentoSwapService = new BentoSwapService();
@@ -20,22 +22,66 @@ router.post("/quote", async (req: Request, res: Response) => {
       to,
       slippage = 300,
       selectMode = "best_return",
+      customTokenIn,
+      customTokenOut,
+      useNativeTokenIn = false, // Novo parâmetro para usar token nativo como input
+      useNativeTokenOut = false, // Novo parâmetro para usar token nativo como output
     } = req.body;
 
     const selectedMode = bentoSwapService.validateSelectMode(selectMode);
 
-    const inToken = bentoSwapService.getToken(fromChainId, tokenIn);
-    const outToken = bentoSwapService.getToken(toChainId, tokenOut);
+    let inToken: Token | undefined;
+    let outToken: Token | undefined;
+
+    // Handle input token
+    if (useNativeTokenIn) {
+      // Use native token for the source chain
+      inToken = bentoSwapService.getToken(
+        fromChainId,
+        bentoSwapService.getNativeTokenSymbol(fromChainId)
+      );
+    } else if (customTokenIn) {
+      inToken = bentoSwapService.createCustomToken(customTokenIn);
+    } else {
+      inToken = bentoSwapService.getToken(fromChainId, tokenIn);
+    }
+
+    // Handle output token
+    if (useNativeTokenOut) {
+      // Use native token for the destination chain
+      outToken = bentoSwapService.getToken(
+        toChainId,
+        bentoSwapService.getNativeTokenSymbol(toChainId)
+      );
+    } else if (customTokenOut) {
+      outToken = bentoSwapService.createCustomToken(customTokenOut);
+    } else {
+      outToken = bentoSwapService.getToken(toChainId, tokenOut);
+    }
 
     if (!inToken) {
+      const exampleToken = getTokenExample(fromChainId);
       res.status(400).json({
-        error: `Unknown input token ${tokenIn} on chain ${fromChainId}`,
+        error: `Unknown input token ${tokenIn} on chain ${fromChainId}. You can provide a custom token definition using 'customTokenIn'.`,
+        example: {
+          customTokenIn: exampleToken,
+        },
+        supportedBrazilianTokens: {
+          BRZ: "Brazilian Digital Token - Available on Polygon, Base, Avalanche, Optimism, Ethereum",
+        },
       });
       return;
     }
     if (!outToken) {
+      const exampleToken = getTokenExample(toChainId);
       res.status(400).json({
-        error: `Unknown output token ${tokenOut} on chain ${toChainId}`,
+        error: `Unknown output token ${tokenOut} on chain ${toChainId}. You can provide a custom token definition using 'customTokenOut'.`,
+        example: {
+          customTokenOut: exampleToken,
+        },
+        supportedBrazilianTokens: {
+          BRZ: "Brazilian Digital Token - Available on Polygon, Base, Avalanche, Optimism, Ethereum",
+        },
       });
       return;
     }

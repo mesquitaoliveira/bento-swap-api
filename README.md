@@ -5,6 +5,7 @@ Uma API robusta para realizar swaps cross-chain de stablecoins brasileiras (BRZ)
 ## 🚀 Características Principais
 
 - **Cross-Chain Swaps**: Suporte para swaps entre múltiplas blockchains
+- **Tokens Nativos**: Suporte completo para ETH, MATIC, AVAX nativos
 - **Stablecoin BRZ**: Foco especial na stablecoin brasileira BRZ
 - **Múltiplos Agregadores**: Suporte a diferentes estratégias de roteamento (melhor retorno, mais rápido, mais barato)
 - **Execução via Wallet**: Transações preparadas para execução segura via wallet conectada
@@ -14,12 +15,14 @@ Uma API robusta para realizar swaps cross-chain de stablecoins brasileiras (BRZ)
 ## 🚀 **Diferencial Competitivo**
 
 ### **Para o Mercado Brasileiro:**
+
 1. **Especialização em BRL**: Foco específico em stablecoins brasileiras
 2. **Cross-Chain Nativo**: Seamless entre Base e Polygon
 3. **API Simples**: Integração fácil para fintechs e exchanges
 4. **Custos Otimizados**: Rotas automáticas para menor gas fee
 
 ### **Vantagens Técnicas:**
+
 - **Modularidade**: Fácil adição de novas redes
 - **Escalabilidade**: Arquitetura preparada para crescimento
 - **Confiabilidade**: Protocol Symbiosis battle-tested
@@ -28,12 +31,14 @@ Uma API robusta para realizar swaps cross-chain de stablecoins brasileiras (BRZ)
 ## 📈 **Potencial de Mercado**
 
 ### **Casos de Uso:**
+
 1. **Exchanges**: Arbitragem automática entre redes
 2. **Fintechs**: Facilitação de pagamentos cross-chain
 3. **DeFi Brasileiro**: Yield farming otimizado
 4. **Usuários**: Transferências baratas entre ecosistemas
 
 ### **Roadmap Sugerido:**
+
 - ✅ **Fase 1**: Base + Polygon (atual)
 - 🔄 **Fase 2**: Arbitrum + Optimism
 - 📋 **Fase 3**: Solana + Binance Smart Chain
@@ -99,6 +104,21 @@ Prepara uma transação de swap cross-chain entre dois tokens.
 - `userAddress`: Endereço da carteira do usuário
 - `slippage`: Tolerância de slippage em basis points (padrão: 300 = 3%)
 - `selectMode`: Estratégia de roteamento (`best_return`, `fastest`, `cheapest`, `best_price`)
+- `useNativeTokenIn`: (opcional) Use `true` para usar token nativo como entrada (ETH, MATIC, etc.)
+- `useNativeTokenOut`: (opcional) Use `true` para usar token nativo como saída
+- `customTokenIn`: (opcional) Definição customizada do token de entrada
+- `customTokenOut`: (opcional) Definição customizada do token de saída
+
+#### Tokens Nativos Suportados:
+
+| Rede      | Chain ID | Token Nativo | Symbol |
+| --------- | -------- | ------------ | ------ |
+| Ethereum  | 1        | Ethereum     | ETH    |
+| Base      | 8453     | Ethereum     | ETH    |
+| Polygon   | 137      | Polygon      | MATIC  |
+| Arbitrum  | 42161    | Ethereum     | ETH    |
+| Optimism  | 10       | Ethereum     | ETH    |
+| Avalanche | 43114    | Avalanche    | AVAX   |
 
 #### Resposta:
 
@@ -241,6 +261,31 @@ NODE_ENV=development
 ```
 
 ## 📝 Exemplos de Uso
+
+### Swap ETH Nativo → USDT (Ethereum → TON)
+
+```javascript
+const ethToUsdtSwap = {
+  fromChainId: 1, // Ethereum Mainnet
+  toChainId: 85918, // TON Network
+  useNativeTokenIn: true, // Usar ETH nativo
+  tokenOut: "USDT",
+  amount: "1", // 1 ETH
+  from: "0x6B0CFAdfAe4A7600dC1Dd28228F59B9d784b74DD",
+  to: "UQBKcS7H78W91GcKcC--lgUUTUzMkf4Y3b-8_Bvah6k3XiQy",
+  slippage: 200, // 2%
+};
+
+fetch("/swap", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(ethToUsdtSwap),
+})
+  .then((response) => response.json())
+  .then((data) => {
+    console.log("Swap ETH nativo preparado:", data);
+  });
+```
 
 ### Swap BRZ → USDT (Base → TON)
 

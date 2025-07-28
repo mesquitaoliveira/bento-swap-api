@@ -33,6 +33,8 @@ router.post("/swap", async (req: Request, res: Response): Promise<void> => {
       selectMode = "best_return",
       customTokenIn,
       customTokenOut,
+      useNativeTokenIn = false, // Novo parâmetro para usar token nativo como input
+      useNativeTokenOut = false, // Novo parâmetro para usar token nativo como output
     } = req.body;
 
     // Assign to variables accessible in catch
@@ -59,13 +61,27 @@ router.post("/swap", async (req: Request, res: Response): Promise<void> => {
     let inToken: Token | undefined;
     let outToken: Token | undefined;
 
-    if (customTokenIn) {
+    // Handle input token
+    if (useNativeTokenIn) {
+      // Use native token for the source chain
+      inToken = bentoSwapService.getToken(
+        fromChainId,
+        bentoSwapService.getNativeTokenSymbol(fromChainId)
+      );
+    } else if (customTokenIn) {
       inToken = bentoSwapService.createCustomToken(customTokenIn);
     } else {
       inToken = bentoSwapService.getToken(fromChainId, tokenIn);
     }
 
-    if (customTokenOut) {
+    // Handle output token
+    if (useNativeTokenOut) {
+      // Use native token for the destination chain
+      outToken = bentoSwapService.getToken(
+        toChainId,
+        bentoSwapService.getNativeTokenSymbol(toChainId)
+      );
+    } else if (customTokenOut) {
       outToken = bentoSwapService.createCustomToken(customTokenOut);
     } else {
       outToken = bentoSwapService.getToken(toChainId, tokenOut);
@@ -174,8 +190,6 @@ router.post("/swap", async (req: Request, res: Response): Promise<void> => {
         ...formattedResult,
         executionMethod: "wallet",
         instructions: {
-          message:
-            "Transação preparada com sucesso! Execute via sua wallet conectada.",
           steps: [
             "1. Conecte sua wallet ao frontend",
             "2. Execute a aprovação do token se necessário",
@@ -184,8 +198,6 @@ router.post("/swap", async (req: Request, res: Response): Promise<void> => {
           ],
         },
         apiSuccess: true,
-        reason:
-          "API direta funcionou perfeitamente - evitando execução backend devido a problemas OpenOcean",
       });
       return;
     } catch (directApiError: any) {
@@ -228,8 +240,6 @@ router.post("/swap", async (req: Request, res: Response): Promise<void> => {
         ],
       },
       apiSuccess: true,
-      reason:
-        "Transação preparada para execução via wallet - mais seguro que execução backend",
     });
   } catch (err: any) {
     console.error(err);
