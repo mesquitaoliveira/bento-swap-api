@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: ["https://bento-swap.netlify.app", "http://localhost:5173"],
+  origin: ["https://bento-swap-base.vercel.app", "http://localhost:5173"],
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
   credentials: true,
@@ -19,7 +19,10 @@ app.use(cors(corsOptions));
 
 // Middleware explícito para OPTIONS
 app.options("*", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "https://bento-swap.netlify.app");
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://bento-swap-base.vercel.app/"
+  );
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
